@@ -1,1 +1,37 @@
+name: Update Traffic Map
 
+on:
+  schedule:
+    # 5分おきに自動実行 (UTC時間基準)
+    - cron: '*/5 * * * *'
+  # GitHubの画面から手動でいつでも実行できるボタンを有効化
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install requests folium matplotlib pandas pytz
+
+    - name: Run update script
+      run: python update_map.py
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
