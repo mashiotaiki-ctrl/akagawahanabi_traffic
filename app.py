@@ -149,8 +149,14 @@ else:
             </div>
             """
             
-            # 常時表示するための特殊設定を施したTooltipオブジェクト
-            permanent_tooltip = folium.Tooltip(tooltip_html, permanent=True, direction="top")
+# 常時表示するための特殊設定を施したTooltipオブジェクト
+            permanent_tooltip = folium.Tooltip(
+                tooltip_html,
+                permanent=True,
+                direction="top",
+                offset=(0, -35),  # 👈 ここを追加！吹き出しを上に35ピクセル持ち上げます
+                style="background: transparent; border: none; box-shadow: none;"  # 👈 余計な外枠を消すおまじない
+            )
 
             # ピンを地図に追加
             folium.Marker(
