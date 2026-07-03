@@ -7,9 +7,9 @@ from streamlit_folium import st_folium
 import pandas as pd
 
 # 画面を横いっぱいに広く使う設定
-st.set_page_config(layout="wide", page_title="赤川花火 リアルタイム交通量マップ")
+st.set_page_config(layout="wide", page_title="2026年赤川花火 リアルタイム渋滞情報マップ")
 
-st.title("🚗 赤川花火 リアルタイム交通量マップ【試験中】")
+st.title("🚗 2026年赤川花火 リアルタイム渋滞情報マップ【試験中】")
 st.caption("※サイトを開いた（またはリロードした）瞬間の最新データをJARTIC APIから取得して表示します。")
 st.write("赤川花火大会当日の国道112号（湯殿山IC・寒河江ダム付近）における混雑をリアルタイムで確認できる渋滞状況予測・モニターマップです。")
 
