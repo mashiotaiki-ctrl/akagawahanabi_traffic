@@ -21,7 +21,8 @@ POINT_MAP = {
     "2110437": "国道47号 戸沢古口",
     "2110194": "国道7号 小波渡",
     "2110193": "国道7号 青山南",
-    "2110201": "日本海東北道 五十川"
+    "2110201": "日本海東北道 五十川",
+    "4110030": "国道7号 府屋"
 }
 OBSERVATION_POINT_CODES = list(POINT_MAP.keys())
 API_URL = "https://api.jartic-open-traffic.org/geoserver"
