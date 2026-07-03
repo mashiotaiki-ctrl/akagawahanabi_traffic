@@ -32,7 +32,7 @@ def get_congestion_status(u_pcu, d_pcu):
     else:
         return "🟢 渋滞は発生していません", "green"
 
-@st.cache_data(ttl=300)  # 👈 これを追加！「300秒（5分間）はデータをメモして使い回せ」という命令です
+@st.cache_data(ttl=300)  # 5分間データをキャッシュしてアクセス集中を防ぎます
 def fetch_point_data(observation_code, target_time):
     time_code = target_time.strftime(f"%Y%m%d%H{(target_time.minute // 5) * 5:02d}")
     params = {
@@ -81,13 +81,11 @@ now_jst = datetime.datetime.now(jst)
 data_points = []
 all_charts_data = {}
 
-# スピナー（読み込み中アニメーション）を表示しながらデータを集計
 with st.spinner("JARTICから最新の交通データを取得中..."):
     for code in OBSERVATION_POINT_CODES:
         chart_data = []
         latest_info = None
 
-        # 過去60分（5分刻み×12回分）のデータを遡って取得
         for i in range(12, -1, -1):
             target_time = now_jst - datetime.timedelta(minutes=25 + (i * 5))
             res = fetch_point_data(code, target_time)
@@ -109,7 +107,6 @@ with st.spinner("JARTICから最新の交通データを取得中..."):
 if not data_points:
     st.error("現在、JARTIC APIからデータを取得できません。しばらく時間を置いてから再度お試しください。")
 else:
-    # 画面を2カラム（左：地図、右：グラフ）に分割
     col1, col2 = st.columns([3, 2])
 
     with col1:
@@ -119,10 +116,9 @@ else:
         m = folium.Map(location=[avg_lat, avg_lon], zoom_start=11)
 
         for point in data_points:
-            # 渋滞ステータスと色の決定
             status_text, color = get_congestion_status(point['u_pcu'], point['d_pcu'])
 
-            # ① 地点名を押したときに出る詳しいポップアップ（クリックで開く）
+            # 看板をクリックしたときに出る詳細ポップアップ
             popup_html = f"""
             <div style="font-size: 14px; width: 220px;">
                 <h4 style="margin: 0 0 5px 0; color: #333;">{point['name']}</h4>
@@ -133,32 +129,38 @@ else:
             </div>
             """
             
-            # ② マップ上に「常時表示」されるテキスト用吹き出し（Tooltipの永久表示化）
-            # HTMLとCSSを使って見やすいミニ看板を作成
-            tooltip_html = f"""
-            <div style="
-                font-size: 12px; 
-                font-weight: bold; 
-                padding: 4px 8px; 
-                background-color: white; 
-                border: 2px solid {color}; 
-                border-radius: 4px;
-                box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-                white-space: nowrap;
-            ">
-                📌 {point['name']}<br>
-                <span style="color: {color};">{status_text}</span>
-            </div>
-            """
-            
+            # 看板のデザインHTML（ここにクリックで詳細が開く機能がくっついています）
+            folium.Marker(
+                [point['lat'], point['lon']],
+                popup=folium.Popup(popup_html, max_width=300),
+                icon=folium.DivIcon(
+                    icon_size=(150, 36),
+                    icon_anchor=(75, 18),
+                    html=f"""
+                    <div style="
+                        font-size: 11px; 
+                        font-weight: bold; 
+                        padding: 4px 6px; 
+                        background-color: rgba(255, 255, 255, 0.95); 
+                        border: 2px solid {color}; 
+                        border-radius: 4px;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+                        text-align: center;
+                        width: 150px;
+                        cursor: pointer;
+                    ">
+                        📌 {point['name'][-7:]}<br>
+                        <span style="color: {color};">{status_text}</span>
+                    </div>
+                    """
+                )
+            ).add_to(m)  # 👈 ここが消えてしまっていました！復活させました
 
-
-        # 地図をStreamlit上に描画
+        # 地図の描画
         st_folium(m, width="100%", height=600, returned_objects=[])
 
     with col2:
         st.subheader("📊 直近60分の交通量推移")
         for code, df_chart in all_charts_data.items():
             st.write(f"📈 **{POINT_MAP[code]}**")
-            # Streamlit標準の折れ線グラフで表示
             st.line_chart(df_chart.set_index('Time'))
