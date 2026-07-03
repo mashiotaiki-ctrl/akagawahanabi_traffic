@@ -136,32 +136,32 @@ else:
             </div>
             """
             
-            # 看板のデザインHTML（ここにクリックで詳細が開く機能がくっついています）
+          # 看板のデザインHTML
             folium.Marker(
                 [point['lat'], point['lon']],
                 popup=folium.Popup(popup_html, max_width=300),
                 icon=folium.DivIcon(
-                    icon_size=(150, 36),
-                    icon_anchor=(75, 18),
+                    icon_size=(160, 48), # 縦幅に少し余裕を持たせます
+                    icon_anchor=(80, 24), # センター合わせの位置を調整
                     html=f"""
                     <div style="
                         font-size: 11px; 
                         font-weight: bold; 
-                        padding: 4px 6px; 
+                        padding: 5px; 
                         background-color: rgba(255, 255, 255, 0.95); 
                         border: 2px solid {color}; 
                         border-radius: 4px;
                         box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
                         text-align: center;
-                        width: 150px;
+                        width: 160px;
                         cursor: pointer;
+                        line-height: 1.3;
                     ">
-                         {point['name'][-7:]}<br>
-                        <span style="color: {color};">{status_text}</span>
+                        📌 {point['name']}<br>  <span style="color: {color}; font-size: 10px;">{status_text}</span>
                     </div>
                     """
                 )
-            ).add_to(m)  # 👈 ここが消えてしまっていました！復活させました
+            ).add_to(m)
 
         # 地図の描画
         st_folium(m, width="100%", height=600, returned_objects=[])
