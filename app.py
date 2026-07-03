@@ -151,21 +151,39 @@ else:
             </div>
             """
             
-# 常時表示するための特殊設定を施したTooltipオブジェクト
-            permanent_tooltip = folium.Tooltip(
-                tooltip_html,
-                permanent=True,
-                direction="top",
-                offset=(0, -35),  # 👈 ここを追加！吹き出しを上に35ピクセル持ち上げます
-                style="background: transparent; border: none; box-shadow: none;"  # 👈 余計な外枠を消すおまじない
-            )
-
-            # ピンを地図に追加
+# ① 通常のピン（クリックすると詳細ポップアップが出る設定）
             folium.Marker(
                 [point['lat'], point['lon']],
                 popup=folium.Popup(popup_html, max_width=300),
-                tooltip=permanent_tooltip,
                 icon=folium.Icon(color=color, icon="info-sign")
+            ).add_to(m)
+
+            # ② 緯度経度に直接固定される「絶対にズレない吹き出し看板」
+            # 看板を少し上に浮かせるために、緯度（lat）に少しだけ（0.003度）プラスします
+            label_lat = point['lat'] + 0.003 
+            
+            folium.Marker(
+                [label_lat, point['lon']],
+                icon=folium.DivIcon(
+                    icon_size=(150, 36),
+                    icon_anchor=(75, 36),  # 看板の横幅の半分（75）をアンカーにすることで、ピンの真上にセンター合わせします
+                    html=f"""
+                    <div style="
+                        font-size: 11px; 
+                        font-weight: bold; 
+                        padding: 4px 6px; 
+                        background-color: rgba(255, 255, 255, 0.95); 
+                        border: 2px solid {color}; 
+                        border-radius: 4px;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+                        text-align: center;
+                        width: 150px;
+                    ">
+                        📌 {point['name'][-7:]}<br>
+                        <span style="color: {color};">{status_text}</span>
+                    </div>
+                    """
+                )
             ).add_to(m)
 
         # 地図をStreamlit上に描画
