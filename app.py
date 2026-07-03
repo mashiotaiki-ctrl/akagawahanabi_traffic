@@ -21,9 +21,9 @@ POINT_MAP = {
     "2110440": "国道47号 立川町",
     "2110437": "国道47号 戸沢古口",
     "2110440": "国道47号 立川町",
-    "2110190": "日本海東北道 三瀬",
     "2110194": "国道7号 小波渡",
-    "2110193": "国道7号 青山南"
+    "2110193": "国道7号 青山南",
+    "2110201": "日本海東北道 五十川"
     
 }
 OBSERVATION_POINT_CODES = list(POINT_MAP.keys())
@@ -156,7 +156,7 @@ else:
                         width: 150px;
                         cursor: pointer;
                     ">
-                        📌 {point['name'][-7:]}<br>
+                         {point['name'][-7:]}<br>
                         <span style="color: {color};">{status_text}</span>
                     </div>
                     """
