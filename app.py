@@ -32,6 +32,7 @@ def get_congestion_status(u_pcu, d_pcu):
     else:
         return "🟢 渋滞は発生していません", "green"
 
+@st.cache_data(ttl=300)  # 👈 これを追加！「300秒（5分間）はデータをメモして使い回せ」という命令です
 def fetch_point_data(observation_code, target_time):
     time_code = target_time.strftime(f"%Y%m%d%H{(target_time.minute // 5) * 5:02d}")
     params = {
