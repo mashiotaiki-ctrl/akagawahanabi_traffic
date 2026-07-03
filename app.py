@@ -17,7 +17,10 @@ st.write("赤川花火大会当日の国道112号（湯殿山IC・寒河江ダ�
 # 地点コードと日本語名のマッピング
 POINT_MAP = {
     "2110491": "国道112号 湯殿山IC付近",
-    "2110488": "国道112号 寒河江ダム付近"
+    "2110488": "国道112号 寒河江ダム付近",
+    "2110440": "国道47号 立川町",
+    "2110440": "国道47号 戸沢古口",
+    
 }
 OBSERVATION_POINT_CODES = list(POINT_MAP.keys())
 API_URL = "https://api.jartic-open-traffic.org/geoserver"
