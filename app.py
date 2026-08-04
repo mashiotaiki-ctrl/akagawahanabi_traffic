@@ -1,27 +1,23 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import requests
 import datetime
 import pytz
 import folium
 from streamlit_folium import st_folium
 import pandas as pd
+from streamlit_autorefresh import st_autorefresh  # ⚡️ 自動リロード用ライブラリ
 
-# 画面を横いっぱいに広く使う設定
 # 画面を横いっぱいに広く使う設定
 st.set_page_config(layout="wide", page_title="2026年赤川花火 リアルタイム渋滞情報マップ")
 
-# 5分（300,000ミリ秒）ごとにブラウザを自動リロードする魔法のコード 🧙‍♂️
-components.html("""
-    <script>
-        setTimeout(function(){
-            window.location.reload();
-        }, 300000);
-    </script>
-""", height=0)
+# -------------------------------------------------------------
+# ⚡️ 5分（300,000ミリ秒）ごとにアプリを自動再実行する設定
+# keyを指定することで重複実行を防ぎ、画面のちらつきなしにデータを自動更新します
+# -------------------------------------------------------------
+count = st_autorefresh(interval=300000, limit=100, key="traffic_map_refresh")
 
 st.title("🚗 2026年赤川花火 リアルタイム渋滞情報マップ【試験中】")
-st.caption("※サイトを開いた（またはリロードした）瞬間の最新データをJARTIC APIから取得して表示します。")
+st.caption(f"※5分ごとに自動で最新データを取得・更新しています。（自動更新回数: {count}回）")
 st.write("赤川花火大会当日の国道112号・国道47号等の混雑をリアルタイムで確認できる渋滞状況予測・モニターマップです。")
 
 # --- 設定項目 ---
@@ -46,7 +42,7 @@ def get_congestion_status(u_pcu, d_pcu):
     else:
         return "🟢 渋滞は発生していません", "green"
 
-# 【超高速化の肝】引数を時間コード（文字列）にすることで、キャッシュの的中率を100%にします
+# 【超高速化の肝】引数を時間コード（文字列）にすることでキャッシュの的中率を向上
 @st.cache_data(ttl=300)
 def fetch_point_data_by_code(observation_code, time_code, display_time_str):
     params = {
@@ -59,7 +55,7 @@ def fetch_point_data_by_code(observation_code, time_code, display_time_str):
         "cql_filter": f"道路種別='3' AND 時間コード={time_code} AND 常時観測点コード='{observation_code}'"
     }
     try:
-        response = requests.get(API_URL, params=params, timeout=3) # タイムアウトを3秒に短縮して詰まりを防止
+        response = requests.get(API_URL, params=params, timeout=3)
         data = response.json()
         if data.get("numberMatched", 0) > 0:
             feature = data["features"][0]
@@ -92,7 +88,7 @@ def fetch_point_data_by_code(observation_code, time_code, display_time_str):
 jst = pytz.timezone('Asia/Tokyo')
 now_jst = datetime.datetime.now(jst)
 
-# 現在時刻を「直近の5分刻みのキリの良い時間」に強制的に切り捨てます（例: 13:03 ➔ 13:00）
+# 現在時刻を直近の5分刻みに切り捨て
 base_time = now_jst.replace(minute=(now_jst.minute // 5) * 5, second=0, microsecond=0)
 
 data_points = []
@@ -103,13 +99,11 @@ with st.spinner("JARTICから最新の交通データを高速解析中..."):
         chart_data = []
         latest_info = None
 
-        # 固定されたbase_timeから過去13回分の時間コードのリストを一発で作る
         for i in range(12, -1, -1):
             target_time = base_time - datetime.timedelta(minutes=25 + (i * 5))
             time_code = target_time.strftime("%Y%m%d%H%M")
             display_time_str = target_time.strftime("%H:%M")
             
-            # キャッシュが確実にヒットする関数を呼び出し
             res = fetch_point_data_by_code(code, time_code, display_time_str)
             if res:
                 chart_data.append({
@@ -127,7 +121,7 @@ with st.spinner("JARTICから最新の交通データを高速解析中..."):
                 all_charts_data[code] = pd.DataFrame(chart_data)
 
 if not data_points:
-    st.error("現在、JARTIC APIの混雑、またはデータ更新時間帯のため一時的にデータを取得できません。リロードをお試しください。")
+    st.error("現在、JARTIC APIの混雑、またはデータ更新時間帯のため一時的にデータを取得できません。")
 else:
     col1, col2 = st.columns([3, 2])
 
@@ -135,7 +129,7 @@ else:
         st.subheader("📍 現在の混雑マップ")
         avg_lat = sum(p['lat'] for p in data_points) / len(data_points)
         avg_lon = sum(p['lon'] for p in data_points) / len(data_points)
-        m = folium.Map(location=[avg_lat, avg_lon], zoom_start=10) # 地点が増えたので少し広域(10)にズームアウト
+        m = folium.Map(location=[avg_lat, avg_lon], zoom_start=10)
 
         for point in data_points:
             status_text, color = get_congestion_status(point['u_pcu'], point['d_pcu'])
@@ -177,7 +171,8 @@ else:
                 )
             ).add_to(m)
 
-        st_folium(m, width="100%", height=600, returned_objects=[])
+        # ⚡️ keyを指定して地図がリロード毎にズーム位置や状態をリセットされるのを防止
+        st_folium(m, width="100%", height=600, returned_objects=[], key="traffic_folium_map")
 
     with col2:
         st.subheader("📊 直近60分の交通量推移")
