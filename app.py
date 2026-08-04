@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import requests
 import datetime
 import pytz
@@ -7,7 +8,17 @@ from streamlit_folium import st_folium
 import pandas as pd
 
 # 画面を横いっぱいに広く使う設定
+# 画面を横いっぱいに広く使う設定
 st.set_page_config(layout="wide", page_title="2026年赤川花火 リアルタイム渋滞情報マップ")
+
+# 5分（300,000ミリ秒）ごとにブラウザを自動リロードする魔法のコード 🧙‍♂️
+components.html("""
+    <script>
+        setTimeout(function(){
+            window.location.reload();
+        }, 300000);
+    </script>
+""", height=0)
 
 st.title("🚗 2026年赤川花火 リアルタイム渋滞情報マップ【試験中】")
 st.caption("※サイトを開いた（またはリロードした）瞬間の最新データをJARTIC APIから取得して表示します。")
