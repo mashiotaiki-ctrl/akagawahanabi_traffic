@@ -39,9 +39,9 @@ def get_congestion_status(u_pcu, d_pcu):
     if max_pcu >= 60:
         return "🚨 渋滞しています", "red"
     elif max_pcu >= 50:
-        return "⚠️ 渋滞の予兆があります", "orange"
-    elif max_pcu >= 40:
         return "⚠️ 混雑しています", "pink"
+    elif max_pcu >= 40:
+        return "⚠️ 渋滞の予兆があります", "orange"
     else:
         return "🟢 渋滞は発生していません", "green"
 
