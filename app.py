@@ -23,11 +23,7 @@ st.write("赤川花火大会当日の国道112号・国道47号等の混雑を�
 # --- 設定項目 ---
 POINT_MAP = {
     "2110491": "国道112号 湯殿山IC",
-    "2110488": "国道112号 月山湖",
     "2110440": "国道47号 立川町",
-    "2110437": "国道47号 戸沢古口",
-    "2110194": "国道7号 小波渡",
-    "4110030": "国道7号 府屋"
 }
 OBSERVATION_POINT_CODES = list(POINT_MAP.keys())
 API_URL = "https://api.jartic-open-traffic.org/geoserver"
@@ -71,8 +67,8 @@ def fetch_point_data_by_code(observation_code, time_code, display_time_str):
             d_large = props.get("下り・大型交通量") or 0
             d_unknown = props.get("下り・車種判別不能交通量") or 0
 
-            u_pcu = u_small + u_unknown + (u_large * 1.7)
-            d_pcu = d_small + d_unknown + (d_large * 1.7)
+            u_pcu = u_small + u_unknown + (u_large * 2.0)
+            d_pcu = d_small + d_unknown + (d_large * 2.0)
 
             return {
                 "display_time": display_time_str,
