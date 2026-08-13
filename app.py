@@ -31,11 +31,11 @@ API_URL = "https://api.jartic-open-traffic.org/geoserver"
 # 渋滞判定の関数（4段階判定）
 def get_congestion_status(u_pcu, d_pcu):
     max_pcu = max(u_pcu, d_pcu)
-    if max_pcu >= 60:
+    if max_pcu >= 100:
         return "🚨 渋滞しています", "red"
-    elif max_pcu >= 50:
+    elif max_pcu >= 80:
         return "⚠️ 混雑しています", "pink"
-    elif max_pcu >= 40:
+    elif max_pcu >= 60:
         return "⚠️ 渋滞の予兆があります", "orange"
     else:
         return "🟢 渋滞は発生していません", "green"
